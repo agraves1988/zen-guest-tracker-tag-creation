@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zenoti File Import for Guest Tags Checker — AMP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:      #041E42;
+    --navy-mid:  #072458;
+    --navy-lite: #0a2d6e;
+    --mauve:     #948794;
+    --tan:       #CDB5A7;
+    --blush:     #E4D5D3;
+    --gold:      #B9975B;
+    --gold-dim:  rgba(185,151,91,0.15);
+    --gold-dim2: rgba(185,151,91,0.07);
+    --white:     #FFFFFF;
+    --text:      #F0EBE8;
+    --muted:     #9A8F8C;
+    --border:    rgba(255,255,255,0.08);
+    --border2:   rgba(255,255,255,0.14);
+    --pass:      #4aba7f;
+    --pass-dim:  rgba(74,186,127,0.12);
+    --fail:      #d95f5f;
+    --fail-dim:  rgba(217,95,95,0.12);
+    --warn:      #d4953a;
+    --warn-dim:  rgba(212,149,58,0.12);
+    --info:      #6fa8d6;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Didot', 'GFS Didot', 'Bodoni MT', 'Didot LT STD', Georgia, serif;
+    --sans: 'Avenir Next', 'Avenir', 'Century Gothic', 'Trebuchet MS', sans-serif;
+  }
+
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* Top bar */
+  .topbar {
+    background: rgba(4,30,66,0.95);
+    border-bottom: 1px solid rgba(185,151,91,0.25);
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .topbar-logo img {
+    height: 36px;
+    display: block;
+  }
+
+  .topbar-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mauve);
+    font-family: var(--sans);
+  }
+
+  /* Gold divider line */
+  .gold-rule {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+    opacity: 0.5;
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 52px 32px 0;
+  }
+
+  header {
+    margin-bottom: 52px;
+  }
+
+  .header-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: var(--sans);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-eyebrow::after {
+    content: '';
+    flex: 1;
+    max-width: 48px;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.5;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 400;
+    line-height: 1.05;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    margin-bottom: 16px;
+  }
+
+  h1 em {
+    color: var(--tan);
+    font-style: italic;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--mauve);
+    line-height: 1.7;
+    font-family: var(--sans);
+    font-weight: 400;
+    max-width: 520px;
+  }
+
+  /* Drop Zone */
+  .drop-zone {
+    border: 1px dashed rgba(185,151,91,0.4);
+    border-radius: 4px;
+    padding: 52px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(255,255,255,0.02);
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--gold);
+    background: var(--gold-dim2);
+  }
+
+  .drop-zone input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer;
+    width: 100%; height: 100%;
+  }
+
+  .drop-icon {
+    width: 52px; height: 52px;
+    margin: 0 auto 18px;
+    border-radius: 4px;
+    border: 1px solid rgba(185,151,91,0.3);
+    background: var(--gold-dim);
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .drop-icon svg {
+    width: 22px; height: 22px;
+    stroke: var(--gold);
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .drop-title {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .drop-sub {
+    font-size: 12px;
+    color: var(--mauve);
+    font-family: var(--mono);
+    letter-spacing: 0.03em;
+  }
+
+  .drop-sub em {
+    color: var(--gold);
+    font-style: normal;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid var(--border2);
+    border-radius: 4px;
+    margin-bottom: 28px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--mauve);
+  }
+
+  .status-bar.visible { display: flex; }
+
+  .status-bar .filename {
+    color: var(--text);
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .status-bar .rows-count {
+    background: var(--gold-dim);
+    color: var(--gold);
+    padding: 2px 10px;
+    border-radius: 2px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  /* Results */
+  .results { display: none; }
+  .results.visible { display: block; }
+
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .summary-card {
+    padding: 18px 20px;
+    border-radius: 4px;
+    border: 0.5px solid var(--border);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .summary-card .s-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mauve);
+    margin-bottom: 10px;
+    font-family: var(--sans);
+  }
+
+  .summary-card .s-value {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .summary-card.pass .s-value { color: var(--pass); }
+  .summary-card.fail .s-value { color: var(--fail); }
+  .summary-card.warn .s-value { color: var(--warn); }
+  .summary-card.pass { border-color: rgba(74,186,127,0.2); background: rgba(74,186,127,0.04); }
+  .summary-card.fail { border-color: rgba(217,95,95,0.2); background: rgba(217,95,95,0.04); }
+  .summary-card.warn { border-color: rgba(212,149,58,0.2); background: rgba(212,149,58,0.04); }
+
+  .verdict-banner {
+    padding: 16px 20px;
+    border-radius: 4px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--sans);
+    letter-spacing: 0.02em;
+  }
+
+  .verdict-banner.all-clear {
+    background: rgba(74,186,127,0.07);
+    border: 1px solid rgba(74,186,127,0.3);
+    color: var(--pass);
+  }
+
+  .verdict-banner.has-issues {
+    background: rgba(217,95,95,0.07);
+    border: 1px solid rgba(217,95,95,0.3);
+    color: var(--fail);
+  }
+
+  .verdict-banner svg {
+    width: 18px; height: 18px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    flex-shrink: 0;
+  }
+
+  /* Checks */
+  .checks-section { margin-bottom: 28px; }
+
+  .checks-section-title {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: var(--sans);
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(185,151,91,0.2);
+  }
+
+  .check-item {
+    padding: 14px 16px;
+    border-radius: 4px;
+    border: 0.5px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 6px;
+  }
+
+  .check-item.pass { border-color: rgba(74,186,127,0.2); background: rgba(74,186,127,0.04); }
+  .check-item.fail { border-color: rgba(217,95,95,0.2); background: rgba(217,95,95,0.04); }
+  .check-item.warn { border-color: rgba(212,149,58,0.2); background: rgba(212,149,58,0.04); }
+  .check-item.info { border-color: rgba(111,168,214,0.2); background: rgba(111,168,214,0.04); }
+
+  .check-header { display: flex; align-items: flex-start; gap: 12px; }
+
+  .check-badge {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  .check-badge svg { width: 11px; height: 11px; stroke-width: 2.5; stroke: currentColor; fill: none; }
+
+  .pass .check-badge { background: rgba(74,186,127,0.15); color: var(--pass); }
+  .fail .check-badge { background: rgba(217,95,95,0.15); color: var(--fail); }
+  .warn .check-badge { background: rgba(212,149,58,0.15); color: var(--warn); }
+  .info .check-badge { background: rgba(111,168,214,0.15); color: var(--info); }
+
+  .check-body { flex: 1; }
+
+  .check-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 3px;
+    font-family: var(--sans);
+    letter-spacing: 0.01em;
+  }
+
+  .check-detail {
+    font-size: 11px;
+    color: var(--mauve);
+    font-family: var(--mono);
+    line-height: 1.6;
+  }
+
+  .check-detail.pass-text { color: var(--pass); }
+  .check-detail.fail-text { color: var(--fail); }
+  .check-detail.warn-text { color: var(--warn); }
+
+  .issues-table {
+    margin-top: 10px;
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .issues-table th {
+    text-align: left;
+    padding: 5px 10px;
+    color: var(--mauve);
+    font-weight: 500;
+    border-bottom: 0.5px solid var(--border);
+    letter-spacing: 0.06em;
+    font-size: 10px;
+  }
+
+  .issues-table td {
+    padding: 5px 10px;
+    border-bottom: 0.5px solid var(--border);
+    color: var(--text);
+  }
+
+  .issues-table tr:last-child td { border-bottom: none; }
+  .issues-table .row-num { color: var(--mauve); white-space: nowrap; }
+  .issues-table .bad-val { color: var(--fail); word-break: break-all; }
+  .issues-table .field-name { color: var(--gold); white-space: nowrap; }
+  .more-row td { color: var(--mauve); font-style: italic; padding-top: 6px; }
+
+  /* Manual checks */
+  .manual-section { margin-top: 28px; }
+
+  .manual-item {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px;
+    border-radius: 4px;
+    border: 0.5px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    user-select: none;
+  }
+
+  .manual-item:hover { border-color: var(--border2); }
+  .manual-item.checked { border-color: rgba(74,186,127,0.25); background: rgba(74,186,127,0.04); }
+
+  .manual-checkbox {
+    width: 18px; height: 18px;
+    border-radius: 2px;
+    border: 1.5px solid rgba(185,151,91,0.4);
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+    transition: all 0.15s;
+  }
+
+  .manual-item.checked .manual-checkbox { background: var(--pass); border-color: var(--pass); }
+  .manual-checkbox svg { width: 10px; height: 10px; stroke: var(--navy); stroke-width: 2.5; fill: none; opacity: 0; transition: opacity 0.15s; }
+  .manual-item.checked .manual-checkbox svg { opacity: 1; }
+
+  .manual-text { flex: 1; }
+
+  .manual-label {
+    font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 2px;
+    font-family: var(--sans); letter-spacing: 0.01em;
+  }
+
+  .manual-item.checked .manual-label { text-decoration: line-through; color: var(--mauve); }
+
+  .manual-note { font-size: 11px; color: var(--mauve); font-family: var(--mono); line-height: 1.6; }
+
+  .manual-link {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: var(--gold); text-decoration: none;
+    font-size: 11px; font-family: var(--mono); margin-top: 5px;
+  }
+
+  .manual-link:hover { text-decoration: underline; }
+  .manual-link svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+  .reset-btn {
+    margin-top: 36px;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    border-radius: 2px;
+    background: transparent;
+    border: 1px solid rgba(185,151,91,0.4);
+    color: var(--gold);
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .reset-btn:hover { background: var(--gold-dim); border-color: var(--gold); }
+  .reset-btn svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+  /* Footer */
+  .footer {
+    margin-top: 64px;
+    padding: 24px 40px;
+    border-top: 1px solid rgba(185,151,91,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-text {
+    font-size: 10px;
+    color: var(--mauve);
+    font-family: var(--sans);
+    letter-spacing: 0.06em;
+  }
+
+  .footer-logo img { height: 20px; opacity: 0.5; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fadeUp 0.3s ease both; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(185,151,91,0.1);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--gold);
+  }
+
+  /* Rules panel */
+  .rules-panel {
+    border: 1px solid rgba(185,151,91,0.2);
+    border-radius: 4px;
+    background: rgba(185,151,91,0.04);
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+
+  .rules-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 18px;
+    border-bottom: 1px solid rgba(185,151,91,0.15);
+  }
+
+  .rules-header-icon {
+    width: 16px; height: 16px;
+    stroke: var(--gold);
+    stroke-width: 1.8;
+    fill: none;
+    flex-shrink: 0;
+  }
+
+  .rules-header-text {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: var(--sans);
+    flex: 1;
+  }
+
+  .rules-progress {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--mauve);
+    letter-spacing: 0.04em;
+  }
+
+  .rules-progress span { color: var(--gold); font-weight: 500; }
+
+  .rules-progress-bar-wrap {
+    height: 2px;
+    background: rgba(185,151,91,0.12);
+  }
+
+  .rules-progress-bar {
+    height: 100%;
+    background: var(--gold);
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+
+  .rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 13px 18px;
+    border-bottom: 1px solid rgba(185,151,91,0.08);
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+  }
+
+  .rule-item:last-child { border-bottom: none; }
+  .rule-item:hover { background: rgba(185,151,91,0.06); }
+  .rule-item.done { background: rgba(74,186,127,0.04); border-bottom-color: rgba(74,186,127,0.08); }
+
+  .rule-cb {
+    width: 18px; height: 18px;
+    border-radius: 2px;
+    border: 1.5px solid rgba(185,151,91,0.45);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+    transition: all 0.15s;
+    background: transparent;
+  }
+
+  .rule-item.done .rule-cb { background: var(--pass); border-color: var(--pass); }
+  .rule-cb svg { width: 10px; height: 10px; stroke: var(--navy); stroke-width: 2.5; fill: none; opacity: 0; transition: opacity 0.15s; }
+  .rule-item.done .rule-cb svg { opacity: 1; }
+
+  .rule-body { flex: 1; }
+
+  .rule-title {
+    font-size: 13px; font-weight: 600; color: var(--white);
+    font-family: var(--sans); letter-spacing: 0.01em; margin-bottom: 2px;
+    transition: color 0.15s;
+  }
+
+  .rule-item.done .rule-title { text-decoration: line-through; color: var(--mauve); }
+  .rule-desc { font-size: 11px; color: var(--mauve); font-family: var(--mono); line-height: 1.55; }
+  .rule-item.done .rule-desc { opacity: 0.5; }
+
+  .rules-all-clear {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(74,186,127,0.08);
+    border-top: 1px solid rgba(74,186,127,0.2);
+    font-size: 11px; font-weight: 600; color: var(--pass);
+    font-family: var(--sans); letter-spacing: 0.05em; text-transform: uppercase;
+  }
+
+  .rules-all-clear.visible { display: flex; }
+  .rules-all-clear svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.5; fill: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="https://243076641.fs1.hubspotusercontent-na2.net/hubfs/243076641/AMP%20Logos/02%20Main%20Logo-Flat-Navy%20Blue.png" alt="AMP logo" style="height:34px;filter:brightness(0) invert(1);opacity:0.9;">
+  <span class="topbar-label">Zenoti File Import · Guest Tags</span>
+</div>
+<div class="gold-rule"></div>
+
+<div class="page">
+  <header>
+    <div class="header-eyebrow">Guest Tag Import</div>
+    <h1>Zenoti File Import<br><em>for Guest Tags</em> Checker</h1>
+    <p class="subtitle">Drop your guest tag CSV below to validate formatting before uploading to Zenoti. Issues are flagged automatically.</p>
+  </header>
+
+  <div class="rules-panel">
+    <div class="rules-header">
+      <svg class="rules-header-icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span class="rules-header-text">File requirements — check off each before uploading</span>
+      <span class="rules-progress"><span id="rDone">0</span> / 6</span>
+    </div>
+    <div class="rules-progress-bar-wrap"><div class="rules-progress-bar" id="rulesBar"></div></div>
+
+    <div class="rule-item" onclick="toggleRule(this)">
+      <div class="rule-cb"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="rule-body">
+        <div class="rule-title">Send Ashton the desired tag name &amp; segment name</div>
+        <div class="rule-desc">Do this before preparing your file — Ashton must create the tag in Zenoti before the file can be imported</div>
+      </div>
+    </div>
+
+    <div class="rule-item" onclick="toggleRule(this)">
+      <div class="rule-cb"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="rule-body">
+        <div class="rule-title">File is saved as CSV</div>
+        <div class="rule-desc">Must be .csv — not .xlsx, .xls, or any other format</div>
+      </div>
+    </div>
+
+    <div class="rule-item" onclick="toggleRule(this)">
+      <div class="rule-cb"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="rule-body">
+        <div class="rule-title">File includes an Email column</div>
+        <div class="rule-desc">A column named <code>Email</code> (or similar) must be present and populated</div>
+      </div>
+    </div>
+
+    <div class="rule-item" onclick="toggleRule(this)">
+      <div class="rule-cb"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="rule-body">
+        <div class="rule-title">File includes a Phone column</div>
+        <div class="rule-desc">Phone numbers must be full digits — no scientific notation like <code>1.15615E+11</code></div>
+      </div>
+    </div>
+
+    <div class="rule-item" onclick="toggleRule(this)">
+      <div class="rule-cb"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="rule-body">
+        <div class="rule-title">File includes a Tag column</div>
+        <div class="rule-desc">A <code>Tag</code> column must exist and every row must have a tag value</div>
+      </div>
+    </div>
+
+    <div class="rule-item" onclick="toggleRule(this)">
+      <div class="rule-cb"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="rule-body">
+        <div class="rule-title">No "(No Value)" cells &amp; no duplicate rows</div>
+        <div class="rule-desc">Replace any <code>(No Value)</code> entries with blanks and remove any duplicate guest rows before saving</div>
+      </div>
+    </div>
+
+    <div class="rules-all-clear" id="rulesAllClear">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      All requirements confirmed — drop your file below to run the automated check
+    </div>
+  </div>
+
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".csv,.txt" />
+    <div class="drop-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+    </div>
+    <div class="drop-title">Drop your CSV file here</div>
+    <div class="drop-sub">or click to browse &nbsp;·&nbsp; <em>.csv files only</em></div>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <svg width="13" height="13" viewBox="0 0 24 24" stroke="#B9975B" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span class="filename" id="statusFilename"></span>
+    <span class="rows-count" id="statusRows"></span>
+  </div>
+
+  <div class="results" id="results"></div>
+</div>
+
+<div class="footer">
+  <span class="footer-text">Advanced MedAesthetic Partners &nbsp;·&nbsp; Internal Tool</span>
+  <img src="https://243076641.fs1.hubspotusercontent-na2.net/hubfs/243076641/AMP%20Logos/Logomark-Flat-White.png" alt="AMP" style="height:22px;opacity:0.35;">
+</div>
+
+<script>
+function toggleRule(el) {
+  el.classList.toggle('done');
+  const items = document.querySelectorAll('.rule-item');
+  const done = document.querySelectorAll('.rule-item.done').length;
+  const total = items.length;
+  document.getElementById('rDone').textContent = done;
+  document.getElementById('rulesBar').style.width = Math.round((done / total) * 100) + '%';
+  const allClear = document.getElementById('rulesAllClear');
+  if (done === total) allClear.classList.add('visible');
+  else allClear.classList.remove('visible');
+}
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const statusBar = document.getElementById('statusBar');
+const statusFilename = document.getElementById('statusFilename');
+const statusRows = document.getElementById('statusRows');
+const resultsEl = document.getElementById('results');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => runChecks(file.name, e.target.result);
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+  return lines.map(line => {
+    const cells = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { cells.push(cur); cur = ''; }
+      else { cur += c; }
+    }
+    cells.push(cur);
+    return cells.map(c => c.trim().replace(/^"|"$/g, ''));
+  });
+}
+
+function runChecks(filename, rawText) {
+  statusFilename.textContent = filename;
+  const rows = parseCSV(rawText);
+  const dataRows = rows.filter(r => r.some(c => c !== ''));
+  statusRows.textContent = (dataRows.length > 0 ? dataRows.length - 1 : 0) + ' data rows';
+  statusBar.classList.add('visible');
+
+  const checks = [];
+  let passCount = 0, failCount = 0, warnCount = 0;
+
+  // 1. File format
+  const isCSV = filename.toLowerCase().endsWith('.csv');
+  checks.push({ section: 'File', name: 'File format is CSV', status: isCSV ? 'pass' : 'fail',
+    detail: isCSV ? 'File extension is .csv ✓' : `File is "${filename}" — must be saved as .csv before uploading.`, issues: [] });
+  isCSV ? passCount++ : failCount++;
+
+  // 2. Tag row
+  const headers = rows[0] || [];
+  const headerLower = headers.map(h => h.toLowerCase());
+  const hasTagRow = headers.length > 0 && (headerLower.some(h => h.includes('tag')) ||
+    headerLower.some(h => h.includes('guest') || h.includes('name') || h.includes('email') || h.includes('phone') || h.includes('mobile')));
+  const tagColIdx = headerLower.findIndex(h => h.includes('tag'));
+  checks.push({ section: 'File', name: 'Tag header row present', status: hasTagRow ? 'pass' : 'fail',
+    detail: hasTagRow ? `Header row found with ${headers.length} column(s): ${headers.slice(0,5).map(h=>`"${h}"`).join(', ')}${headers.length>5?', …':''}` : 'No header row detected. The file must include a tag row as the first row.',
+    issues: [] });
+  hasTagRow ? passCount++ : failCount++;
+
+  if (rows.length < 2) {
+    checks.push({ section: 'Data', name: 'File has data rows', status: 'fail', detail: 'No data rows found beyond the header.', issues: [] });
+    failCount++;
+    renderResults(checks, passCount, failCount, warnCount);
+    return;
+  }
+
+  const bodyRows = rows.slice(1).filter(r => r.some(c => c !== ''));
+
+  // 3. Phone numbers
+  const phoneColIdxs = headerLower.reduce((acc, h, i) => {
+    if (h.includes('phone') || h.includes('mobile') || h.includes('cell')) acc.push(i);
+    return acc;
+  }, []);
+  const sciNotationRx = /^\s*-?\d+(\.\d+)?[eE][+\-]?\d+\s*$/;
+  const phoneIssues = [];
+  bodyRows.forEach((row, ri) => {
+    phoneColIdxs.forEach(ci => {
+      const val = row[ci] || '';
+      if (sciNotationRx.test(val)) phoneIssues.push({ row: ri + 2, col: headers[ci] || `Col ${ci+1}`, val });
+    });
+    if (phoneColIdxs.length === 0) {
+      row.forEach((val, ci) => { if (sciNotationRx.test(val)) phoneIssues.push({ row: ri + 2, col: headers[ci] || `Col ${ci+1}`, val }); });
+    }
+  });
+  if (phoneColIdxs.length === 0 && phoneIssues.length === 0) {
+    checks.push({ section: 'Phone numbers', name: 'Phone number columns', status: 'warn',
+      detail: 'No columns with "phone", "mobile", or "cell" found. Verify manually that no numbers appear in scientific notation (e.g. 1.15615E+11).', issues: [] });
+    warnCount++;
+  } else if (phoneIssues.length > 0) {
+    checks.push({ section: 'Phone numbers', name: 'Phone numbers not truncated', status: 'fail',
+      detail: `${phoneIssues.length} phone number(s) in scientific notation. Open in a text editor and ensure numbers are stored as text.`,
+      issues: phoneIssues.slice(0, 10), moreCount: Math.max(0, phoneIssues.length - 10) });
+    failCount++;
+  } else {
+    checks.push({ section: 'Phone numbers', name: 'Phone numbers not truncated', status: 'pass',
+      detail: `${phoneColIdxs.length} phone column(s) checked — no scientific notation detected.`, issues: [] });
+    passCount++;
+  }
+
+  // 4. No (No Value)
+  const noValueIssues = [];
+  const noValueRx = /^\(no value\)$/i;
+  bodyRows.forEach((row, ri) => {
+    row.forEach((val, ci) => { if (noValueRx.test((val || '').trim())) noValueIssues.push({ row: ri + 2, col: headers[ci] || `Col ${ci+1}`, val }); });
+  });
+  if (noValueIssues.length > 0) {
+    checks.push({ section: 'Cell values', name: 'No "(No Value)" cells', status: 'fail',
+      detail: `${noValueIssues.length} cell(s) contain "(No Value)". Replace with blank cells before uploading.`,
+      issues: noValueIssues.slice(0, 10), moreCount: Math.max(0, noValueIssues.length - 10) });
+    failCount++;
+  } else {
+    checks.push({ section: 'Cell values', name: 'No "(No Value)" cells', status: 'pass',
+      detail: `All ${bodyRows.length} data row(s) checked — no "(No Value)" entries found.`, issues: [] });
+    passCount++;
+  }
+
+  // 5. Tag column populated
+  if (tagColIdx >= 0) {
+    const emptyTagRows = [];
+    bodyRows.forEach((row, ri) => {
+      const val = (row[tagColIdx] || '').trim();
+      if (!val || noValueRx.test(val)) emptyTagRows.push(ri + 2);
+    });
+    if (emptyTagRows.length > 0) {
+      checks.push({ section: 'Cell values', name: 'Tag column values present', status: 'fail',
+        detail: `${emptyTagRows.length} row(s) have an empty tag value. Rows: ${emptyTagRows.slice(0,8).join(', ')}${emptyTagRows.length > 8 ? ', …' : ''}`, issues: [] });
+      failCount++;
+    } else {
+      checks.push({ section: 'Cell values', name: 'Tag column values present', status: 'pass',
+        detail: `All ${bodyRows.length} row(s) have a tag value in column "${headers[tagColIdx]}".`, issues: [] });
+      passCount++;
+    }
+  }
+
+  // 6. Duplicates
+  const emailColIdx = headerLower.findIndex(h => h.includes('email'));
+  const firstPhoneColIdx = phoneColIdxs[0] !== undefined ? phoneColIdxs[0] : -1;
+  const keyMap = {};
+  const dupIssues = [];
+  bodyRows.forEach((row, ri) => {
+    let key = '', keyDesc = '';
+    if (emailColIdx >= 0 && (row[emailColIdx] || '').trim()) {
+      key = (row[emailColIdx] || '').trim().toLowerCase(); keyDesc = 'email';
+    } else if (firstPhoneColIdx >= 0 && (row[firstPhoneColIdx] || '').trim()) {
+      key = (row[firstPhoneColIdx] || '').trim().replace(/\D/g, ''); keyDesc = 'phone';
+    } else {
+      key = row.map(c => (c||'').trim().toLowerCase()).join('|'); keyDesc = 'full row';
+    }
+    if (!key) return;
+    if (keyMap[key] !== undefined) {
+      dupIssues.push({ row: ri + 2, col: keyDesc, val: emailColIdx >= 0 ? (row[emailColIdx]||'').trim() : (row[firstPhoneColIdx]||'').trim() });
+    } else { keyMap[key] = ri + 2; }
+  });
+  if (dupIssues.length > 0) {
+    checks.push({ section: 'Duplicates', name: 'No duplicate rows', status: 'fail',
+      detail: `${dupIssues.length} duplicate row(s) found (matched by ${dupIssues[0].col}). Remove duplicates before uploading.`,
+      issues: dupIssues.slice(0, 10), moreCount: Math.max(0, dupIssues.length - 10) });
+    failCount++;
+  } else {
+    checks.push({ section: 'Duplicates', name: 'No duplicate rows', status: 'pass',
+      detail: `All ${bodyRows.length} row(s) are unique — no duplicates detected.`, issues: [] });
+    passCount++;
+  }
+
+  renderResults(checks, passCount, failCount, warnCount);
+}
+
+function renderResults(checks, passCount, failCount, warnCount) {
+  const allClear = failCount === 0;
+  let html = '';
+
+  html += `<div class="summary-row fade-in">
+    <div class="summary-card pass"><div class="s-label">Passed</div><div class="s-value">${passCount}</div></div>
+    <div class="summary-card fail"><div class="s-label">Failed</div><div class="s-value">${failCount}</div></div>
+    <div class="summary-card warn"><div class="s-label">Warnings</div><div class="s-value">${warnCount}</div></div>
+  </div>`;
+
+  if (allClear && warnCount === 0) {
+    html += `<div class="verdict-banner all-clear fade-in"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>All automated checks passed. Complete the manual steps below, then upload.</div>`;
+  } else if (allClear && warnCount > 0) {
+    html += `<div class="verdict-banner all-clear fade-in"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Automated checks passed with ${warnCount} warning(s). Review warnings and complete manual steps before uploading.</div>`;
+  } else {
+    html += `<div class="verdict-banner has-issues fade-in"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>${failCount} issue(s) must be fixed before this file can be uploaded.</div>`;
+  }
+
+  const sections = [...new Set(checks.map(c => c.section))];
+  sections.forEach(section => {
+    const sectionChecks = checks.filter(c => c.section === section);
+    html += `<div class="checks-section fade-in"><div class="checks-section-title">${section}</div>`;
+    sectionChecks.forEach(check => {
+      const iconMap = {
+        pass: `<polyline points="20 6 9 17 4 12"/>`,
+        fail: `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+        warn: `<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+        info: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>`
+      };
+      const detailClass = check.status === 'pass' ? 'pass-text' : check.status === 'fail' ? 'fail-text' : check.status === 'warn' ? 'warn-text' : '';
+      let issueTable = '';
+      if (check.issues && check.issues.length > 0) {
+        issueTable = `<table class="issues-table">
+          <thead><tr><th>Row</th><th>Column</th><th>Value</th></tr></thead>
+          <tbody>
+            ${check.issues.map(iss => `<tr><td class="row-num">Row ${iss.row}</td><td class="field-name">${iss.col}</td><td class="bad-val">${iss.val}</td></tr>`).join('')}
+            ${check.moreCount > 0 ? `<tr class="more-row"><td colspan="3">+ ${check.moreCount} more issue(s) not shown</td></tr>` : ''}
+          </tbody>
+        </table>`;
+      }
+      html += `<div class="check-item ${check.status}">
+        <div class="check-header">
+          <div class="check-badge"><svg viewBox="0 0 24 24">${iconMap[check.status]}</svg></div>
+          <div class="check-body">
+            <div class="check-name">${check.name}</div>
+            <div class="check-detail ${detailClass}">${check.detail}</div>
+            ${issueTable}
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  html += `<div class="manual-section fade-in">
+    <div class="checks-section-title">Manual confirmation — required before upload</div>
+    <div class="manual-item" id="m0" onclick="toggleManual('m0')">
+      <div class="manual-checkbox"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="manual-text">
+        <div class="manual-label">Tag has been created in Zenoti by Ashton</div>
+        <div class="manual-note">Do not upload until Ashton confirms the tag exists in Zenoti. Tag must be created before file import or it will fail.</div>
+      </div>
+    </div>
+    <div class="manual-item" id="m1" onclick="toggleManual('m1')">
+      <div class="manual-checkbox"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <div class="manual-text">
+        <div class="manual-label">File uploaded via Zenoti File Import for Guest Tags</div>
+        <div class="manual-note">Use the correct SharePoint folder — not direct Zenoti import.</div>
+        <a class="manual-link" href="https://advancedmedaespartners.sharepoint.com/:f:/s/AMP/IgBTDjkkXzSwSI_f5RY-axzTAfs8pKeZmKYHbsXvW4MPae8?e=FeDR3K" target="_blank" onclick="event.stopPropagation()">
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Open Zenoti File Import folder
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <button class="reset-btn fade-in" onclick="resetTool()">
+    <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+    Check another file
+  </button>`;
+
+  resultsEl.innerHTML = html;
+  resultsEl.classList.add('visible');
+}
+
+function toggleManual(id) {
+  document.getElementById(id).classList.toggle('checked');
+}
+
+function resetTool() {
+  resultsEl.classList.remove('visible');
+  resultsEl.innerHTML = '';
+  statusBar.classList.remove('visible');
+  fileInput.value = '';
+}
+</script>
+</body>
+</html>
