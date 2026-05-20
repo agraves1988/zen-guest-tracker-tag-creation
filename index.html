@@ -614,107 +614,9 @@
 
   .rules-all-clear.visible { display: flex; }
   .rules-all-clear svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2.5; fill: none; }
-  /* Password gate */
-  .pw-gate {
-    position: fixed; inset: 0;
-    background: var(--navy);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000;
-    padding: 24px;
-  }
-
-  .pw-box {
-    width: 100%; max-width: 380px;
-    border: 1px solid rgba(185,151,91,0.25);
-    border-radius: 4px;
-    background: rgba(185,151,91,0.04);
-    overflow: hidden;
-  }
-
-  .pw-top {
-    padding: 28px 28px 24px;
-    border-bottom: 1px solid rgba(185,151,91,0.12);
-    text-align: center;
-  }
-
-  .pw-logo { height: 28px; margin: 0 auto 20px; display: block; filter: brightness(0) invert(1); opacity: 0.85; }
-
-  .pw-title {
-    font-family: var(--serif);
-    font-size: 22px; font-weight: 400;
-    color: var(--white); margin-bottom: 6px;
-  }
-
-  .pw-title em { color: var(--tan); font-style: italic; }
-
-  .pw-sub {
-    font-size: 11px; color: var(--mauve);
-    font-family: var(--mono); line-height: 1.5;
-  }
-
-  .pw-form { padding: 24px 28px; }
-
-  .pw-label {
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--gold); font-family: var(--sans);
-    display: block; margin-bottom: 8px;
-  }
-
-  .pw-input {
-    width: 100%; padding: 10px 14px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(185,151,91,0.3);
-    border-radius: 2px;
-    color: var(--white);
-    font-family: var(--mono); font-size: 13px;
-    outline: none; transition: border-color 0.15s;
-    margin-bottom: 12px;
-  }
-
-  .pw-input:focus { border-color: var(--gold); }
-  .pw-input.error { border-color: var(--fail); }
-
-  .pw-btn {
-    width: 100%; padding: 11px;
-    background: transparent;
-    border: 1px solid rgba(185,151,91,0.5);
-    border-radius: 2px;
-    color: var(--gold);
-    font-family: var(--sans); font-size: 12px;
-    font-weight: 600; letter-spacing: 0.1em;
-    text-transform: uppercase; cursor: pointer;
-    transition: all 0.15s;
-  }
-
-  .pw-btn:hover { background: var(--gold-dim); border-color: var(--gold); }
-
-  .pw-error {
-    font-size: 11px; color: var(--fail);
-    font-family: var(--mono); margin-top: 10px;
-    text-align: center; display: none;
-  }
-
-  .pw-error.visible { display: block; }
 </style>
 </head>
 <body>
-
-<div class="pw-gate" id="pwGate">
-  <div class="pw-box">
-    <div class="pw-top">
-      <img class="pw-logo" src="https://243076641.fs1.hubspotusercontent-na2.net/hubfs/243076641/AMP%20Logos/02%20Main%20Logo-Flat-Navy%20Blue.png" alt="AMP">
-      <div class="pw-title">Zenoti File Import<br><em>for Guest Tags</em></div>
-      <div class="pw-sub">Internal tool · Advanced MedAesthetic Partners</div>
-    </div>
-    <div class="pw-form">
-      <label class="pw-label" for="pwInput">Password</label>
-      <input class="pw-input" id="pwInput" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw()" />
-      <button class="pw-btn" onclick="checkPw()">Enter</button>
-      <div class="pw-error" id="pwError">Incorrect password — please try again.</div>
-    </div>
-  </div>
-</div>
 
 <div class="topbar">
   <img src="https://243076641.fs1.hubspotusercontent-na2.net/hubfs/243076641/AMP%20Logos/02%20Main%20Logo-Flat-Navy%20Blue.png" alt="AMP logo" style="height:34px;filter:brightness(0) invert(1);opacity:0.9;">
@@ -815,20 +717,6 @@
 </div>
 
 <script>
-function checkPw() {
-  const val = document.getElementById('pwInput').value;
-  if (val === 'MSZenotiTag_26!') {
-    document.getElementById('pwGate').style.display = 'none';
-  } else {
-    const inp = document.getElementById('pwInput');
-    inp.classList.add('error');
-    document.getElementById('pwError').classList.add('visible');
-    inp.value = '';
-    inp.focus();
-    setTimeout(() => inp.classList.remove('error'), 1200);
-  }
-}
-
 function toggleRule(el) {
   el.classList.toggle('done');
   const items = document.querySelectorAll('.rule-item');
